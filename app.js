@@ -41,7 +41,7 @@ const S = {
   kicker: "YOU'RE INVITED",
   mainName: "SECRET LABS",
   supporting: "DANCE TOGETHER",
-  dateLine: "FRI · 9:00 PM",
+  dateLine: "FRI · 3 JUL 2026 · 9:00 PM",
   venueLine: "MAIN FLOOR",
   footer: "SECRET LABS · DANCE HALL",
   titleFont: "Cinzel",
