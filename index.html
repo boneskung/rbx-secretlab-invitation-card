@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invitation Card Tools — SECRET LABS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Bebas+Neue&family=Oswald:wght@300;400;600;700&family=Montserrat:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">S<span class="brand-dot">·</span>L</span>
+      <div class="brand-text">
+        <strong>Invitation Card Tools</strong>
+        <small>SECRET LABS · Dance Hall</small>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div class="seg" id="formatSeg" role="tablist" aria-label="Format">
+        <button data-format="portrait" class="active">▮ แนวตั้ง</button>
+        <button data-format="square">◼ จัตุรัส</button>
+      </div>
+      <button id="downloadBtn" class="primary">⬇ ดาวน์โหลด PNG</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ===== Canvas stage ===== -->
+    <section class="stage">
+      <div class="stage-inner">
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="card"></canvas>
+          <div class="canvas-hint">ลากบนรูปเพื่อจัดตำแหน่งพื้นหลัง · สกอลล์เพื่อซูม</div>
+        </div>
+      </div>
+      <div class="stage-foot">
+        <span id="sizeLabel">1080 × 1350</span>
+        <span class="dot">•</span>
+        <span id="modeLabel">ชื่อคลับ</span>
+      </div>
+    </section>
+
+    <!-- ===== Controls ===== -->
+    <aside class="panel" id="panel">
+
+      <!-- Subject mode -->
+      <details open>
+        <summary>① ประเภทการ์ด</summary>
+        <div class="body">
+          <div class="seg seg-grid" id="subjectSeg">
+            <button data-subject="club" class="active">ชื่อคลับ</button>
+            <button data-subject="owner">เจ้าของคลับ</button>
+            <button data-subject="player">ผู้เล่นเฉพาะ</button>
+          </div>
+          <p class="hint" id="subjectHint">การ์ดเชิญในนามคลับ</p>
+        </div>
+      </details>
+
+      <!-- Background -->
+      <details open>
+        <summary>② รูปพื้นหลัง</summary>
+        <div class="body">
+          <div class="gallery" id="gallery"></div>
+          <div class="row">
+            <button class="ghost" id="uploadBtn">+ อัปโหลดรูปเอง</button>
+            <button class="ghost" id="noBgBtn">ไม่มีรูป (สีพื้น)</button>
+          </div>
+          <input type="file" id="uploadInput" accept="image/*" hidden />
+          <label class="field">
+            <span>ซูม <em id="zoomVal">100%</em></span>
+            <input type="range" id="bgZoom" min="100" max="320" value="100" />
+          </label>
+          <div class="row">
+            <button class="ghost sm" id="bgResetBtn">รีเซ็ตตำแหน่ง</button>
+          </div>
+        </div>
+      </details>
+
+      <!-- Content -->
+      <details open>
+        <summary>③ ข้อความ</summary>
+        <div class="body">
+          <label class="field">
+            <span>หัวเรื่อง (kicker)</span>
+            <input type="text" id="kicker" value="YOU'RE INVITED" />
+          </label>
+          <label class="field">
+            <span id="nameLabel">ชื่อคลับ</span>
+            <input type="text" id="mainName" value="SECRET LABS" />
+          </label>
+          <label class="field">
+            <span>บรรทัดรอง</span>
+            <input type="text" id="supporting" value="DANCE TOGETHER" />
+          </label>
+          <div class="grid2">
+            <label class="field">
+              <span>วัน / เวลา</span>
+              <input type="text" id="dateLine" value="SAT · 9:00 PM" />
+            </label>
+            <label class="field">
+              <span>สถานที่</span>
+              <input type="text" id="venueLine" value="MAIN FLOOR" />
+            </label>
+          </div>
+          <label class="field">
+            <span>บรรทัดล่างสุด (footer)</span>
+            <input type="text" id="footer" value="SECRET LABS · DANCE HALL" />
+          </label>
+        </div>
+      </details>
+
+      <!-- Text style -->
+      <details>
+        <summary>④ สไตล์ตัวอักษร</summary>
+        <div class="body">
+          <label class="field">
+            <span>ฟอนต์ชื่อหลัก</span>
+            <select id="titleFont">
+              <option value="Cinzel">Cinzel (หรูคลาสสิก)</option>
+              <option value="Playfair Display">Playfair Display</option>
+              <option value="Bebas Neue">Bebas Neue (สูงเพรียว)</option>
+              <option value="Oswald">Oswald</option>
+              <option value="Montserrat">Montserrat</option>
+              <option value="Kanit">Kanit (ไทย)</option>
+              <option value="Prompt">Prompt (ไทย)</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>ฟอนต์ข้อความรอง</span>
+            <select id="bodyFont">
+              <option value="Montserrat">Montserrat</option>
+              <option value="Oswald">Oswald</option>
+              <option value="Kanit">Kanit (ไทย)</option>
+              <option value="Prompt">Prompt (ไทย)</option>
+              <option value="Cinzel">Cinzel</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>ขนาดชื่อหลัก <em id="titleSizeVal">100%</em></span>
+            <input type="range" id="titleSize" min="55" max="160" value="100" />
+          </label>
+          <div class="seg seg-grid" id="alignSeg">
+            <button data-align="left">ซ้าย</button>
+            <button data-align="center" class="active">กลาง</button>
+            <button data-align="right">ขวา</button>
+          </div>
+          <div class="seg seg-grid" id="textPosSeg">
+            <button data-pos="top">บน</button>
+            <button data-pos="center">กลาง</button>
+            <button data-pos="bottom" class="active">ล่าง</button>
+          </div>
+        </div>
+      </details>
+
+      <!-- Logo -->
+      <details open>
+        <summary>⑤ โลโก้</summary>
+        <div class="body">
+          <div class="seg seg-grid" id="logoLayoutSeg">
+            <button data-layout="single" class="active">โลโก้เดี่ยว</button>
+            <button data-layout="pair">คู่ (SECRET LABS × คลับ)</button>
+          </div>
+          <label class="check">
+            <input type="checkbox" id="logoOn" checked />
+            <span>แสดงโลโก้ SECRET LABS</span>
+          </label>
+
+          <!-- Invited club logo (paired) -->
+          <div id="clubLogoRow">
+            <span class="lbl">โลโก้คลับที่เชิญ (แนบรูป)</span>
+            <div class="clublogo-prev" id="clubLogoPrev">ยังไม่ได้แนบโลโก้คลับ</div>
+            <div class="row">
+              <button class="ghost sm" id="clubLogoBtn">+ แนบโลโก้คลับ</button>
+              <button class="ghost sm" id="clubLogoClear">ลบโลโก้คลับ</button>
+            </div>
+            <input type="file" id="clubLogoInput" accept="image/*" hidden />
+            <label class="check">
+              <input type="checkbox" id="logoSepOn" checked />
+              <span>แสดง × คั่นกลางระหว่างโลโก้</span>
+            </label>
+          </div>
+
+          <span class="lbl">ตำแหน่งโลโก้</span>
+          <div class="seg seg-3x3" id="logoPosGrid" aria-label="ตำแหน่งโลโก้"></div>
+          <label class="field">
+            <span>ขนาด <em id="logoSizeVal">22%</em></span>
+            <input type="range" id="logoSize" min="8" max="55" value="22" />
+          </label>
+          <label class="field">
+            <span>ความทึบ <em id="logoOpacityVal">100%</em></span>
+            <input type="range" id="logoOpacity" min="10" max="100" value="100" />
+          </label>
+        </div>
+      </details>
+
+      <!-- Overlay & theme -->
+      <details>
+        <summary>⑥ โทนสี & เอฟเฟกต์</summary>
+        <div class="body">
+          <span class="lbl">ธีมสำเร็จรูป</span>
+          <div class="swatches" id="themeSwatches"></div>
+          <label class="field">
+            <span>สีเน้น (accent)</span>
+            <input type="color" id="accentColor" value="#E5B567" />
+          </label>
+          <label class="field">
+            <span>ความเข้มเงาดำ <em id="overlayVal">62%</em></span>
+            <input type="range" id="overlay" min="0" max="95" value="62" />
+          </label>
+          <label class="field">
+            <span>ทิศทางเงา</span>
+            <select id="overlayStyle">
+              <option value="bottom">เข้มด้านล่าง</option>
+              <option value="top">เข้มด้านบน</option>
+              <option value="full">มืดทั้งภาพ</option>
+              <option value="vignette">ขอบมืด (vignette)</option>
+            </select>
+          </label>
+          <label class="check">
+            <input type="checkbox" id="frameOn" checked />
+            <span>กรอบเส้นขอบ</span>
+          </label>
+          <label class="check">
+            <input type="checkbox" id="grainOn" />
+            <span>เกรน (ฟิล์ม)</span>
+          </label>
+        </div>
+      </details>
+
+      <!-- Templates -->
+      <details open>
+        <summary>⑦ เทมเพลต</summary>
+        <div class="body">
+          <div class="row">
+            <input type="text" id="tplName" placeholder="ชื่อเทมเพลต…" />
+            <button class="primary sm" id="tplSaveBtn">บันทึก</button>
+          </div>
+          <div class="tpl-list" id="tplList"></div>
+          <div class="row">
+            <button class="ghost sm" id="tplExportBtn">⤓ ส่งออก JSON</button>
+            <button class="ghost sm" id="tplImportBtn">⤒ นำเข้า JSON</button>
+          </div>
+          <input type="file" id="tplImportInput" accept="application/json" hidden />
+        </div>
+      </details>
+
+    </aside>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="assets-manifest.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
