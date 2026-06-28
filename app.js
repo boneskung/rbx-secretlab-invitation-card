@@ -41,7 +41,7 @@ const S = {
   kicker: "YOU'RE INVITED",
   mainName: "SECRET LABS",
   supporting: "DANCE TOGETHER",
-  dateLine: "SAT · 9:00 PM",
+  dateLine: "FRI · 9:00 PM",
   venueLine: "MAIN FLOOR",
   footer: "SECRET LABS · DANCE HALL",
   titleFont: "Cinzel",
@@ -50,9 +50,10 @@ const S = {
   align: "center",
   textPos: "bottom",
   logoOn: true,
-  logoLayout: "single",
+  logoLayout: "pair",
   clubLogoSrc: null,
   logoSepOn: true,
+  nameWithLogo: true,
   logoPos: "tc",
   logoSize: 22,
   logoOpacity: 100,
@@ -242,10 +243,10 @@ async function render(canvas, scale = 1) {
   }
 
   /* 4. logo lockup (single SECRET LABS, or paired with invited club) ----- */
-  drawLogoLockup(ctx, W, H, u, accent);
+  const logoBottom = drawLogoLockup(ctx, W, H, u, accent);
 
-  /* 5. text block ------------------------------------------------------- */
-  drawTextBlock(ctx, W, H, u, accent);
+  /* 5. text content ----------------------------------------------------- */
+  drawContent(ctx, W, H, u, accent, logoBottom);
 
   /* 6. footer (pinned bottom-centre) ------------------------------------ */
   if (S.footer.trim()) {
@@ -301,7 +302,7 @@ function drawLogoLockup(ctx, W, H, u, accent) {
   const pair = S.logoLayout === "pair" && S.logoOn && logoImg && clubLogoImg;
 
   if (!pair) {
-    if (!(S.logoOn && logoImg)) return;
+    if (!(S.logoOn && logoImg)) return null;
     const lw = W * (S.logoSize / 100);
     const lh = lw * (logoImg.height / logoImg.width);
     let lx, ly;
@@ -315,7 +316,7 @@ function drawLogoLockup(ctx, W, H, u, accent) {
     ctx.globalAlpha = S.logoOpacity / 100;
     ctx.drawImage(logoImg, lx, ly, lw, lh);
     ctx.restore();
-    return;
+    return ly + lh;
   }
 
   // paired collab lockup
@@ -360,9 +361,11 @@ function drawLogoLockup(ctx, W, H, u, accent) {
   }
   ctx.drawImage(clubLogoImg, x, topY, bW, targetH);
   ctx.restore();
+  return topY + targetH;
 }
 
-function drawTextBlock(ctx, W, H, u, accent) {
+/* Build the named text sections (each {h,gap,draw} or null when empty). */
+function buildSections(ctx, W, H, u, accent) {
   const margin = 96 * u;
   const align = S.align;
   const anchorX = align === "left" ? margin : align === "right" ? W - margin : W / 2;
@@ -372,38 +375,40 @@ function drawTextBlock(ctx, W, H, u, accent) {
   const titleFont = `700 ${titlePx}px ${fontStack(S.titleFont)}`;
   const titleLines = wrapText(ctx, (S.mainName || "").toUpperCase(), titleFont, maxW);
 
-  // build the ordered list of items with measured heights
-  const items = [];
-  if (S.kicker.trim()) {
-    const px = 28 * u;
-    items.push({
-      h: px,
-      gap: 22 * u,
-      draw: (y) =>
-        drawSpaced(ctx, S.kicker.toUpperCase(), anchorX, y + px, `600 ${px}px ${fontStack(S.bodyFont)}`, accent, 7 * u, align),
-    });
-  }
-  if (titleLines.length) {
-    const lh = titlePx * 1.04;
-    items.push({
-      h: lh * titleLines.length - (titlePx * 0.18),
-      gap: 24 * u,
-      draw: (y) => {
-        ctx.save();
-        ctx.font = titleFont;
-        ctx.fillStyle = "#ffffff";
-        ctx.textAlign = align;
-        ctx.textBaseline = "alphabetic";
-        ctx.shadowColor = "rgba(0,0,0,0.55)";
-        ctx.shadowBlur = 18 * u;
-        ctx.shadowOffsetY = 3 * u;
-        titleLines.forEach((ln, i) => ctx.fillText(ln, anchorX, y + titlePx + i * lh));
-        ctx.restore();
-      },
-    });
-  }
-  // divider
-  items.push({
+  const sec = {};
+
+  sec.kicker = S.kicker.trim()
+    ? {
+        h: 28 * u,
+        gap: 22 * u,
+        draw: (y) => {
+          const px = 28 * u;
+          drawSpaced(ctx, S.kicker.toUpperCase(), anchorX, y + px, `600 ${px}px ${fontStack(S.bodyFont)}`, accent, 7 * u, align);
+        },
+      }
+    : null;
+
+  sec.title = titleLines.length
+    ? {
+        h: titlePx * 1.04 * titleLines.length - titlePx * 0.18,
+        gap: 24 * u,
+        draw: (y) => {
+          const lh = titlePx * 1.04;
+          ctx.save();
+          ctx.font = titleFont;
+          ctx.fillStyle = "#ffffff";
+          ctx.textAlign = align;
+          ctx.textBaseline = "alphabetic";
+          ctx.shadowColor = "rgba(0,0,0,0.55)";
+          ctx.shadowBlur = 18 * u;
+          ctx.shadowOffsetY = 3 * u;
+          titleLines.forEach((ln, i) => ctx.fillText(ln, anchorX, y + titlePx + i * lh));
+          ctx.restore();
+        },
+      }
+    : null;
+
+  sec.divider = {
     h: 3 * u,
     gap: 26 * u,
     draw: (y) => {
@@ -418,40 +423,78 @@ function drawTextBlock(ctx, W, H, u, accent) {
       ctx.fill();
       ctx.restore();
     },
-  });
-  if (S.supporting.trim()) {
-    const px = 34 * u;
-    items.push({
-      h: px,
-      gap: 22 * u,
-      draw: (y) =>
-        drawSpaced(ctx, S.supporting.toUpperCase(), anchorX, y + px, `500 ${px}px ${fontStack(S.bodyFont)}`, rgba("#ffffff", 0.9), 4 * u, align),
-    });
-  }
+  };
+
+  sec.supporting = S.supporting.trim()
+    ? {
+        h: 34 * u,
+        gap: 22 * u,
+        draw: (y) => {
+          const px = 34 * u;
+          drawSpaced(ctx, S.supporting.toUpperCase(), anchorX, y + px, `500 ${px}px ${fontStack(S.bodyFont)}`, rgba("#ffffff", 0.9), 4 * u, align);
+        },
+      }
+    : null;
+
   const detail = [S.dateLine.trim(), S.venueLine.trim()].filter(Boolean).join("   •   ");
-  if (detail) {
-    const px = 24 * u;
-    items.push({
-      h: px,
-      gap: 0,
-      draw: (y) => drawSpaced(ctx, detail.toUpperCase(), anchorX, y + px, `500 ${px}px ${fontStack(S.bodyFont)}`, rgba(accent, 0.92), 3 * u, align),
-    });
+  sec.detail = detail
+    ? {
+        h: 24 * u,
+        gap: 0,
+        draw: (y) => {
+          const px = 24 * u;
+          drawSpaced(ctx, detail.toUpperCase(), anchorX, y + px, `500 ${px}px ${fontStack(S.bodyFont)}`, rgba(accent, 0.92), 3 * u, align);
+        },
+      }
+    : null;
+
+  return sec;
+}
+
+function sectionsHeight(list) {
+  return list.reduce((a, it, i) => a + it.h + (i < list.length - 1 ? it.gap : 0), 0);
+}
+function drawSectionList(list, startY) {
+  let y = startY;
+  list.forEach((it, i) => {
+    it.draw(y);
+    y += it.h + (i < list.length - 1 ? it.gap : 0);
+  });
+}
+
+/* True when the invited-club name should ride with the paired logos up top. */
+function clubNameGrouped() {
+  return S.logoLayout === "pair" && S.nameWithLogo && S.logoOn && logoImg && clubLogoImg;
+}
+
+function drawContent(ctx, W, H, u, accent, logoBottom) {
+  const sec = buildSections(ctx, W, H, u, accent);
+
+  if (clubNameGrouped()) {
+    // TOP group: kicker + club name + divider, flowing beneath the logo pair
+    const top = [sec.kicker, sec.title, sec.divider].filter(Boolean);
+    const topStart = S.logoPos[0] === "t" && logoBottom != null ? logoBottom + 46 * u : 150 * u;
+    drawSectionList(top, topStart);
+
+    // BOTTOM zone: supporting + date/venue (the "rarely edited" defaults)
+    const bot = [sec.supporting, sec.detail].filter(Boolean);
+    if (bot.length) {
+      const botPad = 150 * u;
+      drawSectionList(bot, H - botPad - sectionsHeight(bot));
+    }
+    return;
   }
 
-  const totalH = items.reduce((a, it, i) => a + it.h + (i < items.length - 1 ? it.gap : 0), 0);
-
-  let startY;
+  // default: one block positioned by textPos
+  const all = [sec.kicker, sec.title, sec.divider, sec.supporting, sec.detail].filter(Boolean);
+  const totalH = sectionsHeight(all);
   const topPad = (logoAtTop() ? 320 : 140) * u;
   const botPad = 150 * u;
+  let startY;
   if (S.textPos === "top") startY = topPad;
   else if (S.textPos === "center") startY = (H - totalH) / 2;
   else startY = H - botPad - totalH;
-
-  let y = startY;
-  items.forEach((it, i) => {
-    it.draw(y);
-    y += it.h + it.gap;
-  });
+  drawSectionList(all, startY);
 }
 
 /* ===========================================================================
@@ -508,6 +551,7 @@ function syncControls() {
   $("titleSize").value = S.titleSize;
   $("logoOn").checked = S.logoOn;
   $("logoSepOn").checked = S.logoSepOn;
+  $("nameWithLogo").checked = S.nameWithLogo;
   $("logoSize").value = S.logoSize;
   $("logoOpacity").value = S.logoOpacity;
   $("accentColor").value = S.accentColor;
@@ -859,6 +903,7 @@ async function init() {
   bindInput("titleSize", "titleSize", (v) => +v);
   bindInput("logoOn", "logoOn");
   bindInput("logoSepOn", "logoSepOn");
+  bindInput("nameWithLogo", "nameWithLogo");
   bindInput("logoSize", "logoSize", (v) => +v);
   bindInput("logoOpacity", "logoOpacity", (v) => +v);
   bindInput("accentColor", "accentColor", null, highlightThemeActive);
